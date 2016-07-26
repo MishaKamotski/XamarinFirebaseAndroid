@@ -9,6 +9,7 @@ using Android.Gms.Tasks;
 using Android.Gms.Common.Apis;
 using Android.Views;
 using Android.OS;
+using Android.Runtime;
 using Android.Support.V4.App;
 using Firebase.Auth;
 using Firebase;
@@ -118,14 +119,25 @@ namespace Xamarin.Firebase.Android
         {
             if (snapshot.Key == "Info")
             {
-              
+                var obj = (JavaDictionary)snapshot.GetValue(true);
+                var result = new Dictionary<string, object>();
+                result.Add(snapshot.Key, FillDictionary(obj));
             }
             else
             {
 
             }
         }
-
+        private Dictionary<string, object> FillDictionary(JavaDictionary root)
+        {
+            var result = new Dictionary<string, object>();
+            foreach (string key in root.Keys)
+            {
+                var jD = root[key] as JavaDictionary;
+                result.Add(key, jD == null ? root[key] : FillDictionary(jD));
+            }
+            return result;
+        }
         public void OnComplete(Task task)
         {
             var db = FirebaseDatabase.GetInstance(firebaseApp);
